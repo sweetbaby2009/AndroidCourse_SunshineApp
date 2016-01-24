@@ -1,0 +1,85 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivityFragment"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/city_info"
+            >
+            <TextView
+                android:text="NewYork"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/city_name"
+                android:textSize="@dimen/abc_text_size_medium_material" />
+            <TextView
+                android:text="Today, June 14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/date"
+                android:textSize="@dimen/abc_text_size_medium_material"
+                 />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="21°"
+                android:id="@+id/high_temp"
+                android:textSize="@dimen/abc_text_size_large_material"
+                android:layout_below="@+id/city_name" />
+
+            <TextView
+                android:id="@+id/low_temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="8°"
+                android:textSize="@dimen/abc_text_size_large_material"
+                android:layout_below="@+id/high_temp" />
+        </LinearLayout>
+
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/weather_icon"
+            android:layout_alignTop="@+id/city_info"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/abc_btn_check_to_on_mtrl_015"
+            android:contentDescription="PartlyCloudy"
+            android:maxWidth="@dimen/abc_action_bar_stacked_tab_max_width"
+            android:minHeight="@dimen/abc_action_button_min_height_material"
+            android:maxHeight="@dimen/abc_action_bar_stacked_max_height"
+            android:minWidth="@dimen/abc_action_button_min_width_material"
+            android:layout_alignBottom="@id/city_info"
+            android:layout_alignParentStart="false" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Cloudy"
+            android:id="@+id/weather_text"
+            android:layout_below="@+id/weather_icon"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/listview_forecast"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></ListView>
+
+</LinearLayout>
