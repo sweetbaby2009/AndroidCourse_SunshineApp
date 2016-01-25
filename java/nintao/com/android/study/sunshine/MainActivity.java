@@ -20,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
         //when false: set the default value only when the application is never called in the past
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, true);
 
-        Log.v(LOG_TAG, "onCreate()");
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
