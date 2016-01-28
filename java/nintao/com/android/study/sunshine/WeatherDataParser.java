@@ -1,6 +1,10 @@
 package nintao.com.android.study.sunshine;
+import nintao.com.android.study.sunshine.data.WeatherContract;
 import nintao.com.android.study.sunshine.data.WeatherContract.WeatherEntry;
 import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.text.format.Time;
 import android.util.Log;
@@ -17,8 +21,11 @@ public class WeatherDataParser {
      */
     String mUnits = null;
     JSONObject mWeatherJsonObj = null;
-    WeatherDataParser(String units){
+    Context mContext;
+
+    WeatherDataParser(Context context, String units){
         mUnits = units;
+        mContext = context;
 
     }
     private final String LOG_TAG = WeatherDataParser.class.getSimpleName();
@@ -199,6 +206,11 @@ public class WeatherDataParser {
             // if cVVector is not empty, add content to database
             if ( cVVector.size() > 0 ) {
                 // Student: call bulkInsert to add the weatherEntries to the database here
+                ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                cVVector.toArray(cvArray);
+                mContext.getContentResolver().bulkInsert(
+                        WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
+
             }
 
             // Sort order:  Ascending, by date.
@@ -208,17 +220,17 @@ public class WeatherDataParser {
 
             // Students: Uncomment the next lines to display what what you stored in the bulkInsert
 
-    //            Cursor cur = mContext.getContentResolver().query(weatherForLocationUri,
-    //                    null, null, null, sortOrder);
-    //
-    //            cVVector = new Vector<ContentValues>(cur.getCount());
-    //            if ( cur.moveToFirst() ) {
-    //                do {
-    //                    ContentValues cv = new ContentValues();
-    //                    DatabaseUtils.cursorRowToContentValues(cur, cv);
-    //                    cVVector.add(cv);
-    //                } while (cur.moveToNext());
-    //            }
+                Cursor cur = mContext.getContentResolver().query(weatherForLocationUri,
+                        null, null, null, sortOrder);
+
+                cVVector = new Vector<>(cur.getCount());
+                if ( cur.moveToFirst() ) {
+                    do {
+                        ContentValues cv = new ContentValues();
+                        DatabaseUtils.cursorRowToContentValues(cur, cv);
+                        cVVector.add(cv);
+                    } while (cur.moveToNext());
+                }
 
             Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
 

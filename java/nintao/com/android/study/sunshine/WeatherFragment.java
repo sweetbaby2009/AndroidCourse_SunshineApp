@@ -2,6 +2,7 @@ package nintao.com.android.study.sunshine;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -23,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import nintao.com.android.study.sunshine.data.WeatherContract;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -33,6 +36,7 @@ public class WeatherFragment extends Fragment {
     final String  INPUT_COUNTRY = ",us";
     private String mPostcode = null;
     private String mUnit = null;
+
 
     public WeatherFragment() {
     }
@@ -136,6 +140,7 @@ public class WeatherFragment extends Fragment {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mPostcode = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_value));
         mUnit = prefs.getString(getString(R.string.pref_unit_key), "no selection");
+
         if (mPostcode != null){
             try {
                 //realWeatherData = weatherTask.execute(mPostcode + INPUT_COUNTRY).get();

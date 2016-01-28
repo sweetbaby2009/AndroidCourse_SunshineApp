@@ -1,6 +1,9 @@
 package nintao.com.android.study.sunshine;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -16,6 +19,8 @@ import java.net.URL;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 
+import nintao.com.android.study.sunshine.data.WeatherContract;
+
 public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
     //defined the log tag name to be this class name so that it won't change until redefine
@@ -29,6 +34,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
     }
 
     private boolean DEBUG = true;
+
+
+
 
 
     @Override
@@ -107,7 +115,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
             //Log.v(LOG_TAG, "Got Weather JSON String: " + forecastJsonStr);
 
-            WeatherDataParser dataParser = new WeatherDataParser(unitSelected);
+            WeatherDataParser dataParser = new WeatherDataParser(mContext,unitSelected);
             String[] weatherDate = dataParser.getWeatherDataFromJson(forecastJsonStr,location);
             //String cityName = dataParser.getCityNameFromJson(forecastJsonStr);
             return weatherDate;
@@ -143,6 +151,47 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             }
             // New data is back from the server.  Hooray!
         }
+    }
+
+    private long addLocation(String locationSetting, String cityName, double lat, double lon){
+        long locationId;
+
+        // First, check if the location with this city name exists in the db
+        Cursor locationCursor = mContext.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,  //search base
+                new String[]{WeatherContract.LocationEntry._ID},  //return column
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",  //search content
+                new String[]{locationSetting}, //search value
+                null);  //sorting
+
+        if (locationCursor.moveToFirst()) {
+            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
+            locationId = locationCursor.getLong(locationIdIndex);
+        } else {
+            // Now that the content provider is set up, inserting rows of data is pretty simple.
+            // First create a ContentValues object to hold the data you want to insert.
+            ContentValues locationValues = new ContentValues();
+
+            // Then add the data, along with the corresponding name of the data type,
+            // so the content provider knows what kind of value is being inserted.
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, cityName);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+
+            // Finally, insert location data into the database.
+            Uri insertedUri = mContext.getContentResolver().insert(
+                    WeatherContract.LocationEntry.CONTENT_URI,
+                    locationValues
+            );
+
+            // The resulting URI contains the ID for the row.  Extract the locationId from the Uri.
+            locationId = ContentUris.parseId(insertedUri);
+        }
+
+        locationCursor.close();
+        // Wait, that worked?  Yes!
+        return locationId;
     }
 
 }
