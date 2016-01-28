@@ -131,7 +131,7 @@ public class WeatherFragment extends Fragment {
 
     private void getWeather() {
 
-        FetchWeatherTask weatherTask = new FetchWeatherTask();
+        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity(),mWeatherListAdapter);
         String[] realWeatherData = null;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mPostcode = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_value));
