@@ -25,10 +25,10 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
     //defined the log tag name to be this class name so that it won't change until redefine
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
-    private ArrayAdapter<String> mForecastAdapter;
+    private ForecastAdapter mForecastAdapter;
     private final Context mContext;
 
-    public FetchWeatherTask(Context context, ArrayAdapter<String> forecastAdapter) {
+    public FetchWeatherTask(Context context, ForecastAdapter forecastAdapter) {
         mContext = context;
         mForecastAdapter = forecastAdapter;
     }
@@ -142,16 +142,16 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
     return null;
     }
 
-    @Override
-    protected void onPostExecute(String[] result) {
-        if (result != null && mForecastAdapter != null) {
-            mForecastAdapter.clear();
-            for(String dayForecastStr : result) {
-                mForecastAdapter.add(dayForecastStr);
-            }
-            // New data is back from the server.  Hooray!
-        }
-    }
+//    @Override
+//    protected void onPostExecute(String[] result) {
+//        if (result != null && mForecastAdapter != null) {
+//            mForecastAdapter.clear();
+//            for(String dayForecastStr : result) {
+//                mForecastAdapter.add(dayForecastStr);
+//            }
+//            // New data is back from the server.  Hooray!
+//        }
+//    }
 
     private long addLocation(String locationSetting, String cityName, double lat, double lon){
         long locationId;

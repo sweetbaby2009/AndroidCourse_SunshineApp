@@ -33,32 +33,32 @@ public class WeatherDataParser {
     /* The date/time conversion code is going to be moved outside the asynctask later,
      * so for convenience we're breaking it out into its own method now.
      */
-    private String getReadableDateString(long time){
-        // Because the API returns a unix timestamp (measured in seconds),
-        // it must be converted to milliseconds in order to be converted to valid date.
-        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
-        return shortenedDateFormat.format(time);
-    }
+//    private String getReadableDateString(long time){
+//        // Because the API returns a unix timestamp (measured in seconds),
+//        // it must be converted to milliseconds in order to be converted to valid date.
+//        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+//        return shortenedDateFormat.format(time);
+//    }
 
     /**
      * Prepare the weather high/lows for presentation.
      */
-    private String formatHighLows(double high, double low) {
-
-        if (mUnits.equals("imperial")){
-            high = (high*1.8) + 32;
-            low =  (low*1.8) + 32;
-        } else if (!mUnits.equals("metric")){
-            Log.e(LOG_TAG, "Unit type not found:" + mUnits);
-        }
-
-        long roundedHigh = Math.round(high);
-        long roundedLow = Math.round(low);
-
-        String highLowStr = roundedLow + "~" + roundedHigh;
-        // will output 23/8 format for temperatures
-        return highLowStr;
-    }
+//    private String formatHighLows(double high, double low) {
+//
+//        if (mUnits.equals("imperial")){
+//            high = (high*1.8) + 32;
+//            low =  (low*1.8) + 32;
+//        } else if (!mUnits.equals("metric")){
+//            Log.e(LOG_TAG, "Unit type not found:" + mUnits);
+//        }
+//
+//        long roundedHigh = Math.round(high);
+//        long roundedLow = Math.round(low);
+//
+//        String highLowStr = roundedLow + "~" + roundedHigh;
+//        // will output 23/8 format for temperatures
+//        return highLowStr;
+//    }
 
     private void getJsonObject(String weatherJsonStr) throws JSONException{
         //extract the weather info to an Json Array
@@ -220,17 +220,19 @@ public class WeatherDataParser {
 
             // Students: Uncomment the next lines to display what what you stored in the bulkInsert
 
-                Cursor cur = mContext.getContentResolver().query(weatherForLocationUri,
-                        null, null, null, sortOrder);
+            //commented again in 4C
 
-                cVVector = new Vector<>(cur.getCount());
-                if ( cur.moveToFirst() ) {
-                    do {
-                        ContentValues cv = new ContentValues();
-                        DatabaseUtils.cursorRowToContentValues(cur, cv);
-                        cVVector.add(cv);
-                    } while (cur.moveToNext());
-                }
+//                Cursor cur = mContext.getContentResolver().query(weatherForLocationUri,
+//                        null, null, null, sortOrder);
+//
+//                cVVector = new Vector<>(cur.getCount());
+//                if ( cur.moveToFirst() ) {
+//                    do {
+//                        ContentValues cv = new ContentValues();
+//                        DatabaseUtils.cursorRowToContentValues(cur, cv);
+//                        cVVector.add(cv);
+//                    } while (cur.moveToNext());
+//                }
 
             Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
 
@@ -247,16 +249,16 @@ public class WeatherDataParser {
     String[] convertContentValuesToUXFormat(Vector<ContentValues> cvv) {
         // return strings to keep UI functional for now
         String[] resultStrs = new String[cvv.size()];
-        for ( int i = 0; i < cvv.size(); i++ ) {
-            ContentValues weatherValues = cvv.elementAt(i);
-            String highAndLow = formatHighLows(
-                    weatherValues.getAsDouble(WeatherEntry.COLUMN_MAX_TEMP),
-                    weatherValues.getAsDouble(WeatherEntry.COLUMN_MIN_TEMP));
-            resultStrs[i] = getReadableDateString(
-                    weatherValues.getAsLong(WeatherEntry.COLUMN_DATE)) +
-                    " - " + weatherValues.getAsString(WeatherEntry.COLUMN_SHORT_DESC) +
-                    " - " + highAndLow;
-        }
+//        for ( int i = 0; i < cvv.size(); i++ ) {
+//            ContentValues weatherValues = cvv.elementAt(i);
+//            String highAndLow = formatHighLows(
+//                    weatherValues.getAsDouble(WeatherEntry.COLUMN_MAX_TEMP),
+//                    weatherValues.getAsDouble(WeatherEntry.COLUMN_MIN_TEMP));
+//            resultStrs[i] = getReadableDateString(
+//                    weatherValues.getAsLong(WeatherEntry.COLUMN_DATE)) +
+//                    " - " + weatherValues.getAsString(WeatherEntry.COLUMN_SHORT_DESC) +
+//                    " - " + highAndLow;
+//        }
         return resultStrs;
     }
 

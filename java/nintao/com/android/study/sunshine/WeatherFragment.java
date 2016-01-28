@@ -26,12 +26,10 @@ import java.util.concurrent.ExecutionException;
 
 import nintao.com.android.study.sunshine.data.WeatherContract;
 
-/**
- * A placeholder fragment containing a simple view.
- */
+
 public class WeatherFragment extends Fragment {
 
-    private ArrayAdapter<String> mWeatherListAdapter;
+    private ForecastAdapter mWeatherListAdapter;
     private final String LOG_TAG = WeatherFragment.class.getSimpleName();
     final String  INPUT_COUNTRY = ",us";
     private String mPostcode = null;
@@ -57,6 +55,17 @@ public class WeatherFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+
+        // Sort order:  Ascending, by date.
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationSetting, System.currentTimeMillis());
+
+        Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
+                null, null, null, sortOrder);
+
+        mWeatherListAdapter = new ForecastAdapter(getActivity(), cur, 0);
 
         //inflate the rootView for this Fragment. This rootView item will be used to find all the views under it
         this.setHasOptionsMenu(true);
@@ -64,34 +73,34 @@ public class WeatherFragment extends Fragment {
 
         //first display the fake testing weather data
 
-        String[] weatherArray = {
-                "Sunday - Sunny - 12/20",
-                "Monday - Sunny - 12/20",
-                "Tuesday - Sunny - 12/20",
-                "Wednesday - Sunny - 12/20",
-                "Thursday - Sunny - 12/20",
-                "Friday - Sunny - 12/20",
-                "Saturday - Sunny - 12/20",
-        };
-        final List<String> weatherList = new ArrayList<>(Arrays.asList(weatherArray));
-        mWeatherListAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_text, weatherList);
+//        String[] weatherArray = {
+//                "Sunday - Sunny - 12/20",
+//                "Monday - Sunny - 12/20",
+//                "Tuesday - Sunny - 12/20",
+//                "Wednesday - Sunny - 12/20",
+//                "Thursday - Sunny - 12/20",
+//                "Friday - Sunny - 12/20",
+//                "Saturday - Sunny - 12/20",
+//        };
+//        final List<String> weatherList = new ArrayList<>(Arrays.asList(weatherArray));
+//        mWeatherListAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_text, weatherList);
 
         //find the list view and set the adapter to the list view for data inflate
         ListView weatherListView = (ListView) rootView.findViewById(R.id.listview_forecast);
         weatherListView.setAdapter(mWeatherListAdapter);
 
         //add one onItemClickListener to weatherListView.
-        weatherListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String text = mWeatherListAdapter.getItem(position);
-                // This was used for testing
-                // Toast.makeText(getContext(), text, Toast.LENGTH_SHORT).show();
-                Intent openDetails = new Intent(getActivity(), DetailsActivity.class);
-                openDetails.putExtra(Intent.EXTRA_TEXT, text);
-                startActivity(openDetails);
-            }
-        });
+//        weatherListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                String text = mWeatherListAdapter.getItem(position);
+//                // This was used for testing
+//                // Toast.makeText(getContext(), text, Toast.LENGTH_SHORT).show();
+//                Intent openDetails = new Intent(getActivity(), DetailsActivity.class);
+//                openDetails.putExtra(Intent.EXTRA_TEXT, text);
+//                startActivity(openDetails);
+//            }
+//        });
         return rootView;
     }
 
@@ -154,8 +163,8 @@ public class WeatherFragment extends Fragment {
             }
         }
         if (realWeatherData != null) {
-            mWeatherListAdapter.clear();
-            mWeatherListAdapter.addAll(realWeatherData);
+//            mWeatherListAdapter.clear();
+//            mWeatherListAdapter.addAll(realWeatherData);
         }
     }
 }
