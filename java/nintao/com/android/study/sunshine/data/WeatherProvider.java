@@ -23,6 +23,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
+
+import nintao.com.android.study.sunshine.FetchWeatherTask;
 
 public class WeatherProvider extends ContentProvider {
 
@@ -37,6 +40,8 @@ public class WeatherProvider extends ContentProvider {
 
     //set the basic SQLite Query Builder
     private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
+
+    private final String LOG_TAG = WeatherProvider.class.getSimpleName();
 
     static{
         sWeatherByLocationSettingQueryBuilder = new SQLiteQueryBuilder();
@@ -374,6 +379,10 @@ public class WeatherProvider extends ContentProvider {
                     db.endTransaction();
                 }
                 getContext().getContentResolver().notifyChange(uri, null);
+
+                if(returnCount == 0){
+                    Log.w(LOG_TAG,"BulkInsert inserted 0 items.");
+                }
                 return returnCount;
             default:
                 return super.bulkInsert(uri, values);

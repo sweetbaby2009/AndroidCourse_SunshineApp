@@ -7,6 +7,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,11 +30,13 @@ import java.util.concurrent.ExecutionException;
 import nintao.com.android.study.sunshine.data.WeatherContract;
 
 
-public class WeatherFragment extends Fragment {
+public class WeatherFragment extends Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private ForecastAdapter mWeatherListAdapter;
     private final String LOG_TAG = WeatherFragment.class.getSimpleName();
-    final String  INPUT_COUNTRY = ",us";
+    private static final int MY_LOADER_ID = 0;
+    //final String  INPUT_COUNTRY = ",us";
     private String mPostcode = null;
     private String mUnit = null;
 
@@ -55,21 +60,10 @@ public class WeatherFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        String locationSetting = Utility.getPreferredLocation(getActivity());
+        //replaced by a CursorLoader
+//      Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
+//                null, null, null, sortOrder);
 
-        // Sort order:  Ascending, by date.
-        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
-                locationSetting, System.currentTimeMillis());
-
-        Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
-                null, null, null, sortOrder);
-
-        mWeatherListAdapter = new ForecastAdapter(getActivity(), cur, 0);
-
-        //inflate the rootView for this Fragment. This rootView item will be used to find all the views under it
-        this.setHasOptionsMenu(true);
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         //first display the fake testing weather data
 
@@ -85,9 +79,16 @@ public class WeatherFragment extends Fragment {
 //        final List<String> weatherList = new ArrayList<>(Arrays.asList(weatherArray));
 //        mWeatherListAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_text, weatherList);
 
+
+        mWeatherListAdapter = new ForecastAdapter(getActivity(), null, 0);
+
+        //inflate the rootView for this Fragment. This rootView item will be used to find all the views under it
+        this.setHasOptionsMenu(true);
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
         //find the list view and set the adapter to the list view for data inflate
-        ListView weatherListView = (ListView) rootView.findViewById(R.id.listview_forecast);
-        weatherListView.setAdapter(mWeatherListAdapter);
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        listView.setAdapter(mWeatherListAdapter);
 
         //add one onItemClickListener to weatherListView.
 //        weatherListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -142,6 +143,12 @@ public class WeatherFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(MY_LOADER_ID, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
     private void getWeather() {
 
         FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity(),mWeatherListAdapter);
@@ -151,20 +158,39 @@ public class WeatherFragment extends Fragment {
         mUnit = prefs.getString(getString(R.string.pref_unit_key), "no selection");
 
         if (mPostcode != null){
-            try {
-                //realWeatherData = weatherTask.execute(mPostcode + INPUT_COUNTRY).get();
-                realWeatherData = weatherTask.execute(mPostcode + INPUT_COUNTRY,mUnit).get();
-            } catch (ExecutionException e) {
-                Log.e(LOG_TAG, "ExecutionException", e);
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                Log.e(LOG_TAG, "InterruptedException", e);
-                e.printStackTrace();
-            }
+            //realWeatherData = weatherTask.execute(mPostcode + INPUT_COUNTRY).get();
+            weatherTask.execute(mPostcode,mUnit);
         }
         if (realWeatherData != null) {
 //            mWeatherListAdapter.clear();
 //            mWeatherListAdapter.addAll(realWeatherData);
         }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+
+        // Sort order:  Ascending, by date.
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationSetting, System.currentTimeMillis());
+
+        return new CursorLoader(getActivity(),
+                weatherForLocationUri,
+                null,
+                null,
+                null,
+                sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        mWeatherListAdapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+        mWeatherListAdapter.swapCursor(null);
     }
 }
