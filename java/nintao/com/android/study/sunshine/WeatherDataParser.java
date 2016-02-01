@@ -10,7 +10,6 @@ import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.text.format.Time;
 import android.util.Log;
-import java.text.SimpleDateFormat;
 import java.util.Vector;
 
 import org.json.JSONArray;
@@ -262,16 +261,16 @@ public class WeatherDataParser {
      * @param lon the longitude of the city
      * @return the row ID of the added location.
      */
-    long addLocation(String locationSetting, String cityName, double lat, double lon) {
-        // Students: First, check if the location with this city name exists in the db
-        // First, check if the location with this city name exists in the db
+    private long addLocation(String locationSetting, String cityName, double lat, double lon){
         long locationId;
+
+        // First, check if the location with this city name exists in the db
         Cursor locationCursor = mContext.getContentResolver().query(
-                WeatherContract.LocationEntry.CONTENT_URI,
-                new String[]{WeatherContract.LocationEntry._ID},
-                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
-                new String[]{locationSetting},
-                null);
+                WeatherContract.LocationEntry.CONTENT_URI,  //search base
+                new String[]{WeatherContract.LocationEntry._ID},  //return column
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",  //search content
+                new String[]{locationSetting}, //search value
+                null);  //sorting
 
         if (locationCursor.moveToFirst()) {
             int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
@@ -302,6 +301,7 @@ public class WeatherDataParser {
         // Wait, that worked?  Yes!
         return locationId;
     }
+
         /*
         Students: This code will allow the FetchWeatherTask to continue to return the strings that
         the UX expects so that we can continue to test the application even once we begin using
