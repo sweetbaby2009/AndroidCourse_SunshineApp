@@ -18,14 +18,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 //import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import nintao.com.android.study.sunshine.data.WeatherContract;
 
@@ -40,6 +35,24 @@ public class WeatherFragment extends Fragment
     private String mPostcode = null;
     private String mUnit = null;
 
+    private static final String[] FORECAST_COLUMNS = {
+            // In this case the id needs to be fully qualified with a table name, since
+            // the content provider joins the location & weather tables in the background
+            // (both have an _id column)
+            // On the one hand, that's annoying.  On the other, you can search the weather table
+            // using the location set by the user, which is only in the Location table.
+            // So the convenience is worth it.
+            WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+            WeatherContract.WeatherEntry.COLUMN_DATE,
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+            WeatherContract.LocationEntry.COLUMN_COORD_LAT,
+            WeatherContract.LocationEntry.COLUMN_COORD_LONG
+    };
+
 
     public WeatherFragment() {
     }
@@ -47,14 +60,17 @@ public class WeatherFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //set the menu to be available
-        setHasOptionsMenu(true);
+//        //set the menu to be available
+//        setHasOptionsMenu(true);
     }
 
     @Override
     public void onStart(){
         super.onStart();
-        getWeather();
+        //after we have the db in place, we delete the getWeather from onStart to stop the app
+        //fetching the weather every time it starts the fragment.
+        //now it only aquire new weather when "refresh" is called.
+        //getWeather();
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -102,6 +118,25 @@ public class WeatherFragment extends Fragment
 //                startActivity(openDetails);
 //            }
 //        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView adapterView, View view, int position, long l) {
+                // CursorAdapter returns a cursor at the correct position for getItem(), or null
+                // if it cannot seek to that position.
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                if (cursor != null) {
+                    String locationSetting = Utility.getPreferredLocation(getActivity());
+                    Intent intent = new Intent(getActivity(), DetailsActivity.class)
+                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
+                                    locationSetting, cursor.getLong(ForecastAdapter.COL_WEATHER_DATE)
+                            ));
+                    startActivity(intent);
+                }
+            }
+        });
+
         return rootView;
     }
 
@@ -161,10 +196,15 @@ public class WeatherFragment extends Fragment
             //realWeatherData = weatherTask.execute(mPostcode + INPUT_COUNTRY).get();
             weatherTask.execute(mPostcode,mUnit);
         }
-        if (realWeatherData != null) {
-//            mWeatherListAdapter.clear();
+//        if (realWeatherData != null) {
+////            mWeatherListAdapter.clear();
 //            mWeatherListAdapter.addAll(realWeatherData);
-        }
+//        }
+    }
+
+    protected void onLocationChanged(){
+        getWeather();
+        getLoaderManager().restartLoader(MY_LOADER_ID, null, this);
     }
 
     @Override
@@ -178,7 +218,8 @@ public class WeatherFragment extends Fragment
 
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,
-                null,
+                //null,   //projection
+                FORECAST_COLUMNS,
                 null,
                 null,
                 sortOrder);
