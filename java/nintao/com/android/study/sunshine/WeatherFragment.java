@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 //import android.widget.Toast;
 
 
@@ -34,6 +35,7 @@ public class WeatherFragment extends Fragment
     //final String  INPUT_COUNTRY = ",us";
     private String mPostcode = null;
     private String mUnit = null;
+    private  boolean isInflated = false;
 
     private static final String[] FORECAST_COLUMNS = {
             // In this case the id needs to be fully qualified with a table name, since
@@ -50,9 +52,18 @@ public class WeatherFragment extends Fragment
             WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.LocationEntry.COLUMN_COORD_LAT,
-            WeatherContract.LocationEntry.COLUMN_COORD_LONG
+            WeatherContract.LocationEntry.COLUMN_COORD_LONG,
+            WeatherContract.LocationEntry.COLUMN_CITY_NAME
     };
 
+    public static final int COL_WEATHER_DATE = 1;
+    public static final int COL_LOCATION_COORD_LAT = 7;
+    public static final int COL_LOCATION_COORD_LONG = 8;
+    public static final int COL_LOCATION_CITY_NAME = 9;
+
+    private TextView mFriendlyDateView;
+    private TextView mDateView;
+    private TextView mCityNameView;
 
     public WeatherFragment() {
     }
@@ -60,8 +71,8 @@ public class WeatherFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        //set the menu to be available
-//        setHasOptionsMenu(true);
+        // Add this line in order for this fragment to handle menu events.
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -99,8 +110,12 @@ public class WeatherFragment extends Fragment
         mWeatherListAdapter = new ForecastAdapter(getActivity(), null, 0);
 
         //inflate the rootView for this Fragment. This rootView item will be used to find all the views under it
-        this.setHasOptionsMenu(true);
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        //inflate the non-list views
+        mDateView = (TextView) rootView.findViewById(R.id.main_date_textview);
+        mFriendlyDateView = (TextView) rootView.findViewById(R.id.main_day_textview);
+        mCityNameView = (TextView) rootView.findViewById(R.id.main_city_name_textview);
 
         //find the list view and set the adapter to the list view for data inflate
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
@@ -227,7 +242,25 @@ public class WeatherFragment extends Fragment
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+
+        if (!cursor.moveToFirst() || cursor == null) {
+            return;
+        }
+
+        // Read date from cursor and update views for day of week and date
+        long date = cursor.getLong(COL_WEATHER_DATE);
+        String friendlyDateText = Utility.getDayName(getActivity(), date);
+        String dateText = Utility.getFormattedMonthDay(getActivity(), date);
+        mFriendlyDateView.setText(friendlyDateText);
+        mDateView.setText(dateText);
+
+        //City name
+        String description = cursor.getString(COL_LOCATION_CITY_NAME);
+        mCityNameView.setText(description);
+
+        //new content to list
         mWeatherListAdapter.swapCursor(cursor);
+
     }
 
     @Override
