@@ -1,8 +1,14 @@
 package nintao.com.android.study.sunshine;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+
 import org.json.JSONException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,14 +16,31 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 
-public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
+import nintao.com.android.study.sunshine.data.WeatherContract;
+
+public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
     //defined the log tag name to be this class name so that it won't change until redefine
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+    private ForecastAdapter mForecastAdapter;
+    private final Context mContext;
+
+    public FetchWeatherTask(Context context, ForecastAdapter forecastAdapter) {
+        mContext = context;
+        mForecastAdapter = forecastAdapter;
+    }
+
+    private boolean DEBUG = true;
+
+
+
+
 
     @Override
-    protected String[] doInBackground(String... params) {
+    protected Void doInBackground(String... params) {
 
         //if no postCode provided, no action
         if (params.length == 0){
@@ -25,11 +48,11 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         }
 
         String format = "json";
-        String location = params[0];
+        String mPostCode = params[0];
         //String units = params[1];
         String unitSelected = params[1];
         String units = "metric";
-        int numberOfDays = 7;
+        int numberOfDays = 14;
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -52,7 +75,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             final String APP_ID = "2bd900111f79c3314191afe4cc83dda0";
 
             Uri buildUri = Uri.parse(BASE_URL).buildUpon()
-                    .appendQueryParameter(POSTCODE_PARAM,location)
+                    .appendQueryParameter(POSTCODE_PARAM,mPostCode+"us")
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(UNITS_PARAM, units)
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numberOfDays))
@@ -92,35 +115,43 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
             //Log.v(LOG_TAG, "Got Weather JSON String: " + forecastJsonStr);
 
-            WeatherDataParser dataParser = new WeatherDataParser(unitSelected);
-            try {
-
-                String[] weatherDate = dataParser.getWeatherDataFromJson(forecastJsonStr, numberOfDays);
-                String cityName = dataParser.getCityNameFromJson(forecastJsonStr);
-                return weatherDate;
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-
+            WeatherDataParser dataParser = new WeatherDataParser(mContext,unitSelected);
+            dataParser.getWeatherDataFromJson(forecastJsonStr,mPostCode);
+            //String cityName = dataParser.getCityNameFromJson(forecastJsonStr);
+//            return weatherDate;
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attempting
             // to parse it.
             return null;
+        } catch (JSONException e) {
+        Log.e(LOG_TAG, e.getMessage(), e);
+        e.printStackTrace();
         } finally{
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG,"Error closing stream", e);
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(LOG_TAG,"Error closing stream", e);
+                    }
                 }
             }
-        }
     return null;
     }
+
+//    @Override
+//    protected void onPostExecute(String[] result) {
+//        if (result != null && mForecastAdapter != null) {
+//            mForecastAdapter.clear();
+//            for(String dayForecastStr : result) {
+//                mForecastAdapter.add(dayForecastStr);
+//            }
+//            // New data is back from the server.  Hooray!
+//        }
+//    }
+
 
 }
