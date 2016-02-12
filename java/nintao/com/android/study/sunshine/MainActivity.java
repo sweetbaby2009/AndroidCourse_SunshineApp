@@ -11,6 +11,8 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private String mPostcode = null;
+    private final String WEATHERFRAGMENT_TAG = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +22,14 @@ public class MainActivity extends AppCompatActivity {
         //when false: set the default value only when the application is never called in the past
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, true);
 
+        mPostcode = Utility.getPreferredLocation(this);
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_weather, new WeatherFragment(), WEATHERFRAGMENT_TAG)
+                    .commit();
+        }
+
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -27,6 +37,22 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String postcode = Utility.getPreferredLocation(this);
+        if (postcode!=null && !postcode.equals(mPostcode)){
+            WeatherFragment fragment = (WeatherFragment)getSupportFragmentManager().
+                    findFragmentByTag(WEATHERFRAGMENT_TAG);
+            if (null != fragment){
+                fragment.onLocationChanged();
+            }
+            mPostcode = postcode;
+        }
+
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

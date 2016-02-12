@@ -10,6 +10,7 @@ import android.view.MenuItem;
 
 public class DetailsActivity extends AppCompatActivity {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,4 +45,5 @@ public class DetailsActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }

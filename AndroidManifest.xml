@@ -11,7 +11,9 @@
         android:theme="@style/AppTheme">
 
         <provider android:authorities= "nintao.com.android.study.sunshine"
-            android:name=".data.WeatherProvider" />
+            android:name=".data.WeatherProvider"
+            android:enabled="true"
+            android:exported="false"/>
 
         <activity
             android:name=".MainActivity"
