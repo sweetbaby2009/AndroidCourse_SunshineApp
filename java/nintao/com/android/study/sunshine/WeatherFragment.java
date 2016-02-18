@@ -61,8 +61,8 @@ public class WeatherFragment extends Fragment
     public static final int COL_LOCATION_COORD_LONG = 8;
     public static final int COL_LOCATION_CITY_NAME = 9;
 
-    private TextView mFriendlyDateView;
-    private TextView mDateView;
+    private TextView mCoordLat;
+    private TextView mCoordLong;
     private TextView mCityNameView;
 
     public WeatherFragment() {
@@ -113,8 +113,8 @@ public class WeatherFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         //inflate the non-list views
-        mDateView = (TextView) rootView.findViewById(R.id.main_date_textview);
-        mFriendlyDateView = (TextView) rootView.findViewById(R.id.main_day_textview);
+        mCoordLat = (TextView) rootView.findViewById(R.id.main_coordlat_textview);
+        mCoordLong = (TextView) rootView.findViewById(R.id.main_coordlong_textview);
         mCityNameView = (TextView) rootView.findViewById(R.id.main_city_name_textview);
 
         //find the list view and set the adapter to the list view for data inflate
@@ -248,11 +248,11 @@ public class WeatherFragment extends Fragment
         }
 
         // Read date from cursor and update views for day of week and date
-        long date = cursor.getLong(COL_WEATHER_DATE);
-        String friendlyDateText = Utility.getDayName(getActivity(), date);
-        String dateText = Utility.getFormattedMonthDay(getActivity(), date);
-        mFriendlyDateView.setText(friendlyDateText);
-        mDateView.setText(dateText);
+        String coordLat =Long.toString(cursor.getLong(COL_LOCATION_COORD_LAT));
+        String coordLong =Long.toString(cursor.getLong(COL_LOCATION_COORD_LONG));
+
+        mCoordLat.setText(coordLat);
+        mCoordLong.setText(coordLong);
 
         //City name
         String description = cursor.getString(COL_LOCATION_CITY_NAME);

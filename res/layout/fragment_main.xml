@@ -16,17 +16,17 @@
         android:id="@+id/main_city_name_textview"
         android:textSize="@dimen/abc_text_size_medium_material" />
     <TextView
-        android:text="June 14"
+        android:text="1938.323"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/main_date_textview"
+        android:id="@+id/main_coordlat_textview"
         android:textSize="@dimen/abc_text_size_medium_material"
         />
     <TextView
-        android:text="Wednesday"
+        android:text="163.33"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/main_day_textview"
+        android:id="@+id/main_coordlong_textview"
         android:textSize="@dimen/abc_text_size_medium_material"
         />
 

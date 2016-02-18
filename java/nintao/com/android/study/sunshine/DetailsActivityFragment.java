@@ -150,7 +150,9 @@ public class DetailsActivityFragment extends Fragment
         Log.v(LOG_TAG,"onCreateLoader");
 
         Intent intent = getActivity().getIntent();
-        if (intent == null) {
+
+        //if the date from the intent is empty then do not create the fragment details
+        if (intent == null  || intent.getData() == null) {
             return null;
         }
 
@@ -173,7 +175,7 @@ public class DetailsActivityFragment extends Fragment
         // Read weather condition ID from cursor
         int weatherId = cursor.getInt(COL_WEATHER_CONDITION_ID);
         // Use placeholder Image
-        mIconView.setImageResource(R.drawable.ic_launcher);
+        mIconView.setImageResource(Utility.getColorIconForWeatherCondition(weatherId));
 
         // Read date from cursor and update views for day of week and date
         long date = cursor.getLong(COL_WEATHER_DATE);
