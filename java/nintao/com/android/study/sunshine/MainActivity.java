@@ -12,7 +12,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private String mPostcode = null;
-    private final String WEATHERFRAGMENT_TAG = null;
+    private final String DETAILFRAGMENT_TAG = "DFTAG";
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,11 +25,19 @@ public class MainActivity extends AppCompatActivity {
 
         mPostcode = Utility.getPreferredLocation(this);
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_weather, new WeatherFragment(), WEATHERFRAGMENT_TAG)
-                    .commit();
+        // if it's a two pane mode, then add the detail fragment when creating the main activity.
+        if (findViewById(R.id.fragment_details) != null) {
+            mTwoPane = true;
+            if (savedInstanceState == null) {
+                Log.v(LOG_TAG, "Detail Fragment is created as in main activity.");
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragment_details, new DetailsActivityFragment())
+                        .commit();
+            }
+        } else{
+            mTwoPane = false;
         }
+
 
     }
 
@@ -44,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         String postcode = Utility.getPreferredLocation(this);
         if (postcode!=null && !postcode.equals(mPostcode)){
             WeatherFragment fragment = (WeatherFragment)getSupportFragmentManager().
-                    findFragmentByTag(WEATHERFRAGMENT_TAG);
+                    findFragmentById(R.id.fragment_weather);
             if (null != fragment){
                 fragment.onLocationChanged();
             }
