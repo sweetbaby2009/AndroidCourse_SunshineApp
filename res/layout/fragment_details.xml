@@ -1,7 +1,6 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="nintao.com.android.study.sunshine.DetailsActivityFragment"
@@ -18,13 +17,11 @@
         <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Today"
         android:id="@+id/detail_day_textview"
         />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="July,24th"
             android:id="@+id/detail_date_textview"
             />
         <LinearLayout
@@ -42,13 +39,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="21C"
                     android:id="@+id/detail_forecast_high_textview"
                     />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="10C"
                     android:id="@+id/detail_forecast_low_textview"
                     />
             </LinearLayout>
@@ -63,12 +58,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/detail_icon"
-                    android:src="@drawable/ic_launcher"
                     android:contentDescription="Weather Icon" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="WeatherDescription"
                     android:id="@+id/detail_forecast_textview"/>
             </LinearLayout>
         </LinearLayout>
