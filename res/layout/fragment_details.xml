@@ -68,19 +68,16 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Humidity"
             android:id="@+id/detail_humidity_textview"
             />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Wind"
             android:id="@+id/detail_wind_textview"
             />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pressure"
             android:id="@+id/detail_pressure_textview"
             />
     </LinearLayout>

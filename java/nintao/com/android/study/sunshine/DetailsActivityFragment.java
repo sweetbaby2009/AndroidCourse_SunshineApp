@@ -2,6 +2,7 @@ package nintao.com.android.study.sunshine;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -10,6 +11,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.app.ActionBarActivity;
+import android.telecom.Call;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,6 +35,8 @@ public class DetailsActivityFragment extends Fragment
     private static final String FORECAST_SHARE = " #SunshineApp";
     private String mWeatherStr;
     private static final int DETAIL_LOADER = 0;
+    private Uri mUri;
+    static final String DETAIL_URI = "URI";
 
 
     private static final String[] DETAIL_COLUMNS = {
@@ -96,6 +100,11 @@ public class DetailsActivityFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        Bundle arguments = getArguments();
+        if (arguments != null){
+            mUri = arguments.getParcelable(DetailsActivityFragment.DETAIL_URI);
+        }
         View rootView = inflater.inflate(R.layout.fragment_details, container, false);
 //
 //        //Inspect the Intent which trig the Details Activity
@@ -122,7 +131,7 @@ public class DetailsActivityFragment extends Fragment
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, mWeatherStr+FORECAST_SHARE);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mWeatherStr + FORECAST_SHARE);
         return shareIntent;
     }
     @Override
@@ -147,22 +156,27 @@ public class DetailsActivityFragment extends Fragment
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.v(LOG_TAG,"onCreateLoader");
 
-        Intent intent = getActivity().getIntent();
-
-        //if the date from the intent is empty then do not create the fragment details
-        if (intent == null  || intent.getData() == null) {
-            return null;
+//        Log.v(LOG_TAG,"onCreateLoader");
+//
+//        Intent intent = getActivity().getIntent();
+//
+//        //if the date from the intent is empty then do not create the fragment details
+//        if (intent == null  || intent.getData() == null) {
+//            return null;
+//        }
+        //when mUri (arguments) is not null, try to read the db for data
+        //in single pane this won't be a problem because detail fragment is always loaded with content
+        if ( null != mUri ) {
+            return new CursorLoader(getActivity(),
+                    mUri,
+                    //null,   //projection
+                    DETAIL_COLUMNS,
+                    null,
+                    null,
+                    null);
         }
-
-        return new CursorLoader(getActivity(),
-                intent.getData(),
-                //null,   //projection
-                DETAIL_COLUMNS,
-                null,
-                null,
-                null);
+        return null;
     }
 
     @Override
@@ -224,6 +238,17 @@ public class DetailsActivityFragment extends Fragment
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader){}
+
+    void onLocationChanged( String newLocation ) {
+        // replace the uri, since the location has changed
+        Uri uri = mUri;
+        if (null != uri) {
+            long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
+            Uri updatedUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
+            mUri = updatedUri;
+            getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
+        }
+    }
 
 
 }

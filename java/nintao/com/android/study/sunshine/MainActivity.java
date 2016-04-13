@@ -1,6 +1,7 @@
 package nintao.com.android.study.sunshine;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,7 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements WeatherFragment.Callback {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private String mPostcode = null;
@@ -29,15 +30,20 @@ public class MainActivity extends AppCompatActivity {
         if (findViewById(R.id.fragment_details) != null) {
             mTwoPane = true;
             if (savedInstanceState == null) {
-                Log.v(LOG_TAG, "Detail Fragment is created as in main activity.");
+                Log.v(LOG_TAG, "Detail Fragment is being created as in main activity.");
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.fragment_details, new DetailsActivityFragment())
                         .commit();
+                Log.v(LOG_TAG, "Detail Fragment is created as in main activity.");
             }
         } else{
             mTwoPane = false;
+            //remove the shadow for the one pane scenario
+            getSupportActionBar().setElevation(0f);
         }
-
+        WeatherFragment weatherFragment = (WeatherFragment) getSupportFragmentManager().
+                findFragmentById(R.id.fragment_weather);
+        weatherFragment.setUseTodayView(!mTwoPane);
 
     }
 
@@ -46,22 +52,6 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String postcode = Utility.getPreferredLocation(this);
-        if (postcode!=null && !postcode.equals(mPostcode)){
-            WeatherFragment fragment = (WeatherFragment)getSupportFragmentManager().
-                    findFragmentById(R.id.fragment_weather);
-            if (null != fragment){
-                fragment.onLocationChanged();
-            }
-            mPostcode = postcode;
-        }
-
-    }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -78,5 +68,45 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String postcode = Utility.getPreferredLocation(this);
+        if (postcode!=null && !postcode.equals(mPostcode)){
+            WeatherFragment ff = (WeatherFragment)getSupportFragmentManager().
+                    findFragmentById(R.id.fragment_weather);
+            if (null != ff){
+                ff.onLocationChanged();
+            }
+            DetailsActivityFragment df = (DetailsActivityFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+            if ( null != df ) {
+                df.onLocationChanged(postcode);
+            }
+            mPostcode = postcode;
+        }
+
+    }
+
+    @Override
+    public void onItemSelected(Uri contentUri) {
+        if (mTwoPane) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle args = new Bundle();
+            args.putParcelable(DetailsActivityFragment.DETAIL_URI, contentUri);
+
+            DetailsActivityFragment detailFragment = new DetailsActivityFragment();
+            detailFragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_details, detailFragment, DETAILFRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, DetailsActivity.class)
+                    .setData(contentUri);
+            startActivity(intent);
+        }
+    }
 
 }
