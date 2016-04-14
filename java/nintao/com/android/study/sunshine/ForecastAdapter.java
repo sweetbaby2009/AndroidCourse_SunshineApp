@@ -44,6 +44,8 @@ public class ForecastAdapter extends CursorAdapter {
     private static final int VIEW_TYPE_FUTURE_DAY = 1;
     private static final int VIEW_TYPE_COUNT = 2;
 
+    private boolean mUseTodayView = true;
+
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
@@ -78,9 +80,12 @@ public class ForecastAdapter extends CursorAdapter {
                 " - " + highAndLow;
     }
 
+    public void setUseTodayView(boolean useTodayView){
+        mUseTodayView = useTodayView;
+    }
     @Override
     public int getItemViewType(int position) {
-        return position == 0 ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+        return (position == 0 && mUseTodayView) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
     }
 
     @Override
@@ -131,8 +136,19 @@ public class ForecastAdapter extends CursorAdapter {
         //get viewTag
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
+        int viewType = getItemViewType(cursor.getPosition());
+
         //read image icon
-        viewHolder.iconView.setImageResource(R.drawable.ic_launcher);
+        int weatherId = cursor.getInt(COL_WEATHER_CONDITION_ID);
+
+        switch (viewType){
+            case VIEW_TYPE_TODAY:
+                viewHolder.iconView.setImageResource(Utility.getColorIconForWeatherCondition(weatherId));
+                break;
+            case VIEW_TYPE_FUTURE_DAY:
+                viewHolder.iconView.setImageResource(Utility.getBnwIconResourceForWeatherCondition(weatherId));
+                break;
+        }
 
         //read date from cursor
         long date = cursor.getLong(COL_WEATHER_DATE);
@@ -145,6 +161,9 @@ public class ForecastAdapter extends CursorAdapter {
 //        TextView descriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
 //        descriptionView.setText(description);
         viewHolder.descriptionView.setText(description);
+
+        //add content description to the icon field
+        viewHolder.iconView.setContentDescription(description);
 
         // Read user preference for metric or imperial temperature units
         boolean isMetric = Utility.isMetric(context);

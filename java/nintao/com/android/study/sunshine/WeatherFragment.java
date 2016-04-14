@@ -19,8 +19,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 //import android.widget.Toast;
 
+
+import java.util.List;
 
 import nintao.com.android.study.sunshine.data.WeatherContract;
 
@@ -34,6 +37,12 @@ public class WeatherFragment extends Fragment
     //final String  INPUT_COUNTRY = ",us";
     private String mPostcode = null;
     private String mUnit = null;
+    private  boolean isInflated = false;
+    private int mPosition = ListView.INVALID_POSITION;
+    private ListView mListView;
+    private boolean mUseTodayView;
+    private static final String SELECTED_KEY = "selected_position";
+
 
     private static final String[] FORECAST_COLUMNS = {
             // In this case the id needs to be fully qualified with a table name, since
@@ -50,9 +59,18 @@ public class WeatherFragment extends Fragment
             WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.LocationEntry.COLUMN_COORD_LAT,
-            WeatherContract.LocationEntry.COLUMN_COORD_LONG
+            WeatherContract.LocationEntry.COLUMN_COORD_LONG,
+            WeatherContract.LocationEntry.COLUMN_CITY_NAME
     };
 
+    public static final int COL_WEATHER_DATE = 1;
+    public static final int COL_LOCATION_COORD_LAT = 7;
+    public static final int COL_LOCATION_COORD_LONG = 8;
+    public static final int COL_LOCATION_CITY_NAME = 9;
+
+    private TextView mCoordLat;
+    private TextView mCoordLong;
+    private TextView mCityNameView;
 
     public WeatherFragment() {
     }
@@ -60,8 +78,8 @@ public class WeatherFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        //set the menu to be available
-//        setHasOptionsMenu(true);
+        // Add this line in order for this fragment to handle menu events.
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -97,14 +115,19 @@ public class WeatherFragment extends Fragment
 
 
         mWeatherListAdapter = new ForecastAdapter(getActivity(), null, 0);
+        mWeatherListAdapter.setUseTodayView(mUseTodayView);
 
         //inflate the rootView for this Fragment. This rootView item will be used to find all the views under it
-        this.setHasOptionsMenu(true);
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        //inflate the non-list views
+        mCoordLat = (TextView) rootView.findViewById(R.id.main_coordlat_textview);
+        mCoordLong = (TextView) rootView.findViewById(R.id.main_coordlong_textview);
+        mCityNameView = (TextView) rootView.findViewById(R.id.main_city_name_textview);
+
         //find the list view and set the adapter to the list view for data inflate
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
-        listView.setAdapter(mWeatherListAdapter);
+        mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        mListView.setAdapter(mWeatherListAdapter);
 
         //add one onItemClickListener to weatherListView.
 //        weatherListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -119,7 +142,8 @@ public class WeatherFragment extends Fragment
 //            }
 //        });
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView adapterView, View view, int position, long l) {
@@ -128,16 +152,31 @@ public class WeatherFragment extends Fragment
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
-                    Intent intent = new Intent(getActivity(), DetailsActivity.class)
-                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
-                                    locationSetting, cursor.getLong(ForecastAdapter.COL_WEATHER_DATE)
+//                    Intent intent = new Intent(getActivity(), DetailsActivity.class)
+//                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
+//                                    locationSetting, cursor.getLong(ForecastAdapter.COL_WEATHER_DATE)
+                    ((Callback) getActivity())
+                            .onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
+                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)
                             ));
-                    startActivity(intent);
+//                    startActivity(intent);
                 }
+                mPosition = position;
             }
         });
-
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
+            // The listview probably hasn't even been populated yet.  Actually perform the
+            // swapout in onLoadFinished.
+            mPosition = savedInstanceState.getInt(SELECTED_KEY);
+        }
         return rootView;
+    }
+
+    public void setUseTodayView(boolean useTodayView){
+        mUseTodayView = useTodayView;
+        if (mWeatherListAdapter != null){
+            mWeatherListAdapter.setUseTodayView(mUseTodayView);
+        }
     }
 
     @Override
@@ -161,7 +200,7 @@ public class WeatherFragment extends Fragment
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_viewOnMap) {
             showMap(Uri.parse("geo:0,0?").buildUpon()
-                    .appendQueryParameter("q",mPostcode)
+                    .appendQueryParameter("q", mPostcode)
                     .build());
             return true;
         }
@@ -174,7 +213,7 @@ public class WeatherFragment extends Fragment
         if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
             startActivity(intent);
         } else {
-            Log.e(LOG_TAG, "Failed to call "+ mPostcode + "not found.");
+            Log.e(LOG_TAG, "Failed to call " + mPostcode + "not found.");
         }
     }
 
@@ -208,7 +247,16 @@ public class WeatherFragment extends Fragment
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mPosition != ListView.INVALID_POSITION) {
+            outState.putInt(SELECTED_KEY, mPosition);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+
         String locationSetting = Utility.getPreferredLocation(getActivity());
 
         // Sort order:  Ascending, by date.
@@ -227,11 +275,45 @@ public class WeatherFragment extends Fragment
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+
+        if (!cursor.moveToFirst() || cursor == null) {
+            return;
+        }
+
+        // Read date from cursor and update views for day of week and date
+        String coordLat =Long.toString(cursor.getLong(COL_LOCATION_COORD_LAT));
+        String coordLong =Long.toString(cursor.getLong(COL_LOCATION_COORD_LONG));
+
+        mCoordLat.setText(coordLat);
+        mCoordLong.setText(coordLong);
+
+        //City name
+        String description = cursor.getString(COL_LOCATION_CITY_NAME);
+        mCityNameView.setText(description);
+
+        //new content to list
         mWeatherListAdapter.swapCursor(cursor);
+
+        if (mPosition != ListView.INVALID_POSITION){
+            mListView.smoothScrollToPosition(mPosition);
+        }
+
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mWeatherListAdapter.swapCursor(null);
+    }
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(Uri dateUri);
     }
 }

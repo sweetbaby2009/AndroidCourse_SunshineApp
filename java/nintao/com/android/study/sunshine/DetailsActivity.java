@@ -2,11 +2,15 @@ package nintao.com.android.study.sunshine;
 
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import nintao.com.android.study.sunshine.data.WeatherContract;
 
 public class DetailsActivity extends AppCompatActivity {
 
@@ -16,6 +20,20 @@ public class DetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
+        if (savedInstanceState == null) {
+            Log.v("DetailsActivity", "Detail Fragment is being created as in Details activity.");
+
+            Bundle arguments = new Bundle();
+            arguments.putParcelable(DetailsActivityFragment.DETAIL_URI, getIntent().getData());
+
+            DetailsActivityFragment detailFragment = new DetailsActivityFragment();
+            detailFragment.setArguments(arguments);
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_details, detailFragment)
+                    .commit();
+            Log.v("DetailsActivity", "Detail Fragment is created done as in Details activity.");
+            }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -45,5 +63,6 @@ public class DetailsActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 
 }
